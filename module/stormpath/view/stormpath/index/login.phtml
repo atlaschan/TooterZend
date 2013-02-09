@@ -1,0 +1,64 @@
+<?php		
+	$form = $this->form;
+	$form->setAttribute('action', 'login');
+	$form->prepare();
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<?php
+	
+?>
+<head>
+    <title id="pageTitle"><?php echo $messages["account.login"]; ?></title>
+    <link href="<?php echo $base_directory; ?>/assets/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" type="image/vnd.microsoft.icon" href="<?php echo $base_directory; ?>/assets/img/favicon.ico"/>
+</head>
+<body style="padding-top: 15px;">
+<div class="container-fluid">
+    <div class="hero-unit">
+        <h1>
+            <?php echo $messages["welcome.message"]; ?>
+        </h1>
+
+        <h3>
+            <?php echo $messages["welcome.sample.app"]; ?>
+        </h3>
+        <?php echo $this->form()->openTag($form); ?>
+            
+			<?php
+				if(isset($error) and !empty($error))
+				{
+					$id = $error->getId();
+					$styleClass = $error->getStyleClass();
+					$message = $error->getMessage();
+					echo "<div class=\"control-group error\">
+						<span id=\"$id\" class=\"$styleClass\">$message</span>
+						</div>";
+				}
+			
+			?>
+            <div class="control-group">
+                <label class="control-label" for="userName"><?php echo $messages["customer.userName"]; ?></label>
+                <?php echo $this->formRow($form->get('userName')); ?>
+				
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="password"><?php echo $messages["customer.password"]; ?></label>
+                <?php echo $this->formRow($form->get('password')); ?>
+            </div>
+            <div id="control-group">
+                <button type="submit" class="btn btn-primary"><?php echo $messages["account.login"]; ?></button><br/><br/>
+            </div>
+            <div id="control-group">
+                <a href="<?php echo $current_directory; ?>/reset-password"><?php echo $messages["password.forgot"]; ?></a><br>
+                <?php echo $messages["account.dont.have.one"]; ?>
+                <a href="<?php echo $current_directory; ?>/sign-up"><?php echo $messages["account.signup"]; ?></a>
+            </div>
+        <?php echo $this->form()->closeTag();?>
+    </div>
+</div>
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+<script src="<?php echo $base_directory; ?>/assets/js/bootstrap.min.js"></script>
+</body>
+</html>
