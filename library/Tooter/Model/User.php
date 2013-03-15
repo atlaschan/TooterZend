@@ -222,7 +222,7 @@ class User implements InputFilterAwareInterface
 	 
 	 public function getGroupUrl()
 	 {
-		return $this->groupUrl();
+		return $this->groupUrl;
 	 }
 	 
 	 
@@ -239,6 +239,7 @@ class User implements InputFilterAwareInterface
 		$this->firstName	= (isset($data['firstName'])) ? $data['firstName'] : null;
 		$this->lastName	= (isset($data['lastName'])) ? $data['lastName'] : null;
 		$this->confirmPassword	= (isset($data['confirmPassword'])) ? $data['confirmPassword'] : null;
+		$this->groupUrl = (isset($data['groupUrl'])) ? $data['groupUrl'] : null;
     }
 	 
 	 

@@ -14,7 +14,7 @@
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">atlas chan <b class="caret"></b></a>
                 <ul class="dropdown-menu">
-                    <li><a href="#" id="showAccountTypes"><?php echo $messages["customer.account.type"] ?>: Basic</a></li>
+                    <li><a href="#" id="showAccountTypes"><?php echo $messages["customer.account.type"] ?>: <?php if($isAdmin) echo "Administrator"; else if($isPremium) echo "Premium"; else echo "Basic";   ?></a></li>
                     <li class="divider"></li>
                     <li class="nav-header"></li>
                     <li><a href="logout"><?php echo $messages["tooter.logout"] ?></a></li>
@@ -31,7 +31,21 @@
                 
                 
                 <div class="control-group">
-                    
+                    <?php
+						if(isset($error) and !empty($error))
+						{
+							$id = $error->getId();
+							$styleClass = $error->getStyleClass();
+							if(isset($messages[$error->getMessage()]))
+								$errorMessage = $messages[$error->getMessage()];
+							else
+								$errorMessage = $error->getMessage();
+							echo "<div id=\"$id\" class=\"$styleClass\">$errorMessage</div>";
+						}
+						else if(isset($updateProfile) and $updateProfile)
+							echo '<div>'.$messages["profile.message.updated"].'</div>'
+						
+					?>
                 </div>
                 <div class="control-group">
                     <label class="control-label" for="firstName"><?php echo $messages["customer.first.name"] ?></label>
@@ -48,13 +62,16 @@
                 <div class="control-group">
                     <label class="radio inline" style="margin-left: -18px !important;"><?php echo $messages["customer.account.type"] ?>:</label>&nbsp;
                     <label class="radio inline">
-                        <input id="groupUrl1" name="groupUrl" class="radio" type="radio" value="PUT THE REST URL TO A GROUP FOR ADMINISTRATOR LEVEL HERE -- THIS GROUP MUST EXIST IN THE DIRECTORY LISTED ABOVE"/> Administrator
+                        <input id="groupUrl1" name="groupUrl" class="radio" type="radio" value="<?=$application_property["stormpath.sdk.administrator.rest.url"]?>"
+						<?php if($isAdmin) echo 'checked="checked"';?>/> Administrator
                     </label>
                     <label class="radio inline">
-                        <input id="groupUrl2" name="groupUrl" class="radio" type="radio" value="PUT THE REST URL TO A GROUP FOR ADMINISTRATOR LEVEL HERE -- THIS GROUP MUST EXIST IN THE DIRECTORY LISTED ABOVE"/> Premium
+                        <input id="groupUrl2" name="groupUrl" class="radio" type="radio" value="<?=$application_property["stormpath.sdk.premium.rest.url"]?>"
+						<?php if($isPremium) echo 'checked="checked"';?>/> Premium
                     </label>
                     <label class="radio inline">
-                        <input id="groupUrl3" name="groupUrl" class="radio" type="radio" value="" checked="checked"/> Basic
+                        <input id="groupUrl3" name="groupUrl" class="radio" type="radio" value="" 
+						<?php if($isPremium == false and $isAdmin == false) echo 'checked="checked"';?>/> Basic
                     </label>
                 </div>
                 <div class="control-group">

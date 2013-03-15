@@ -12,6 +12,7 @@ use Tooter\Model\Error;
 use Tooter\Model\User;
 use Tooter\Form\TootForm;
 use Tooter\Validator\TootValidator;
+use Tooter\Util\PermissionUtil;
 
 /*
 	Login Controller and Logout Controller
@@ -29,6 +30,9 @@ class TootController extends AbstractActionController
 			return $this->redirect()->toRoute('login'); //redirect to login page if not authenticated yet
 		} 
 		
+		$user = $_SESSION["user"];
+		$error = null;
+		
 		$form = new TootForm();
 		$request = $this->getRequest();
 		
@@ -45,33 +49,23 @@ class TootController extends AbstractActionController
 				
 				$status = $this->submit($toot);
 				
-				if($status->getStatus() == Service::SUCCESS)
-				{
-
-					return array('messages'=>$messages,	
-						'base_directory'=>$base_directory,	
-						'current_directory'=>$current_directory,	
-						'application_property'=>$application_property,
-						'user'=>$_SESSION["user"]);
-				}
-				else
-				{
+				if($status->getStatus() != Service::SUCCESS)
 					$error = $status->getError();
-					return array('messages'=>$messages,	
-								'base_directory'=>$base_directory,	
-								'current_directory'=>$current_directory,	
-								'application_property'=>$application_property,
-								'error'=>$error);
-				}
             }
 		}
 		
-		$user = (isset($_SESSION["user"])) ? $_SESSION["user"] : null;
+		$permissionUtil = new PermissionUtil($application_property);
+		$isAdmin = $permissionUtil->hasRole($user, "ADMINISTRATOR");
+		$isPremium = $permissionUtil->hasRole($user, "PREMIUM_USER");
+
 		return array('messages'=>$messages,	
 					'base_directory'=>$base_directory,	
 					'current_directory'=>$current_directory,	
 					'application_property'=>$application_property,
-					'user'=> $user);
+					'user'=> $user,
+					'isAdmin' => $isAdmin,
+					'isPremium' => $isPremium, 
+					'error' => $error);
     }
 	
 	private function submit($toot)

@@ -37,11 +37,12 @@ class SignUpController extends AbstractActionController
 				
                 $user->exchangeArray($form->getData());
 				
-				$status = $this->processSubmit($user);
+				$status = $this->submit($user);
 				
 				if($status->getStatus() == Service::SUCCESS)
 				{
-
+					$obj = $status->getObj();
+					$_SESSION["user"] = $obj["user"];
 					return $this->redirect()->toRoute('tooter');
 				}
 				else
@@ -61,7 +62,7 @@ class SignUpController extends AbstractActionController
     }
 
 	
-	private function processSubmit($user)
+	private function submit($user)
 	{
 		$signUpValidator = new SignUpValidator;
 		$checked = $signUpValidator->validate($user);
@@ -69,10 +70,11 @@ class SignUpController extends AbstractActionController
 			return $checked;
 		
 		$status = new Status();
+		$customerDao = new DefaultCustomerDao($this->stormpath->getConnector());
 		
 		//$returnStatus = array();
 		try{
-			$userName = strtolower($user->getFirstName()) + strtolower($user->getLastName());
+			$userName = strtolower($user->getFirstName()).strtolower($user->getLastName());
 			
 			// Create the account in the Directory where the Tooter application belongs.
 			$directory = $this->stormpath->getDataStore()->getResource($this->stormpath->getDirectoryURL(), \Services_Stormpath::DIRECTORY);
@@ -84,10 +86,20 @@ class SignUpController extends AbstractActionController
 			$account->setSurname($user->getLastName());
 			$account->setUsername($userName);
 			
-			$account = $directory->createAccount($account);
+			$directory->createAccount($account);
+			
+			//adding group after the account has been created
+			$groupUrl = $user->getGroupUrl();
+			if(!empty($groupUrl))
+			{
+				$dataStore = $this->stormpath->getDataStore();
+				$group = $dataStore->getResource($groupUrl, \Services_Stormpath::GROUP);
+				$account->addGroup($group);
+			}
 			
 			$user->setUserName($userName);
-			$this->customerDao->save($user);
+			$user->setAccount($account);
+			$customerDao->save($user);
 			
 			$status->setStatus(Service::SUCCESS);
 			$status->setObj(array("user"=>$user));
