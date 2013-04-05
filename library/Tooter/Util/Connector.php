@@ -16,12 +16,7 @@ class Connector
 	
 	public function __construct($username, $password, $dbName)
 	{
-		$this->dbName = $dbName;
-		$this->username = $username;
-		$this->password = $password;
-		
-		if(!empty($this->username) and !empty($this->password) and !empty($this->dbName))
-			$this->mysql = new \mysqli("localhost", $this->username, $this->password, $dbName);
+		$this->mysql=new \SQLite3("tooter", 0666); 
 	}
 	
 	private function query($query)
@@ -29,12 +24,17 @@ class Connector
 		return $this->mysql->query($query);
 	}
 	
+	private function exec($query)
+	{
+		return $this->mysql->exec($query);
+	}
+	
 	public function save($obj)
 	{
 		if($obj instanceof User)
 		{
 			$query = "insert into T_ACCOUNT(userName) values('".$obj->getUserName()."')";
-			$this->query($query);
+			$this->exec($query);
 			
 			$customers = $this->get("T_ACCOUNT", $obj->getUserName());
 			if(!empty($customers))
@@ -46,7 +46,7 @@ class Connector
 		else if ($obj instanceof Toot)
 		{
 			$query = "insert into T_TOOT(tootMessage, custId) values('".$obj->getTootMessage()."', ".$obj->getCustomer()->getId().")";
-			$this->query($query);
+			$this->exec($query);
 			
 			$list = $this->get("T_TOOT", $obj->getCustomer()->getId());
 			if(!empty($list))
@@ -69,7 +69,7 @@ class Connector
 			$result = $this->query($query);
 			if($result)
 			{
-				while($row = $result->fetch_row())
+				while($row = $result->fetchArray())
 				{
 					$user = new User();
 					$user->setId($row[0]);
@@ -84,7 +84,7 @@ class Connector
 			$result = $this->query($query);
 			if($result)
 			{
-				while($row = $result->fetch_row())
+				while($row = $result->fetchArray())
 				{
 					$toot = new Toot();
 					$toot->setTootId($row[0]);

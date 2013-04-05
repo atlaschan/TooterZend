@@ -6,6 +6,7 @@ use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use Tooter\Service;
 use Tooter\Model\Dao\DefaultTootDao;
+use Tooter\Model\Dao\DefaultCustomerDao;
 use Tooter\Model\Toot;
 use Tooter\Model\Status;
 use Tooter\Model\Error; 
@@ -36,15 +37,13 @@ class TootController extends AbstractActionController
 		$form = new TootForm();
 		$request = $this->getRequest();
 		
+		$this->stormpath = $stormpath; //initializing the service
 		if($request->isPost())
 		{
 			$toot = new Toot();
 			
 			$form->setData($request->getPost());
-			if ($form->isValid()) {
-				
-				$this->stormpath = $stormpath; //initializing the service
-				
+			if ($form->isValid()) {				
                 $toot->exchangeArray($form->getData());
 				
 				$status = $this->submit($toot);
@@ -52,6 +51,10 @@ class TootController extends AbstractActionController
 				if($status->getStatus() != Service::SUCCESS)
 					$error = $status->getError();
             }
+		} 
+		else
+		{
+			$this->retrieveToots();
 		}
 		
 		$permissionUtil = new PermissionUtil($application_property);
@@ -114,6 +117,24 @@ class TootController extends AbstractActionController
 		return $status;
 	}
 
+	private function retrieveToots()
+	{
+		$tootDao = new DefaultTootDao($this->stormpath->getConnector());
+		$customerDao = new DefaultCustomerDao($this->stormpath->getConnector());
+	
+		$user = $_SESSION["user"];
+		$customer = $customerDao->getCustomerByUserName($user->getUserName());
+		
+		$tootList = $tootDao->getTootsByUserId($customer->getId());
+
+		foreach ($tootList as $key=>$itemToot) {
+			$itemToot->setCustomer($user);
+		}
+
+		krsort($tootList, SORT_NUMERIC);
+		$user->setTootList($tootList);
+	}
+	
 }
 
 ?>
